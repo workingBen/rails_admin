@@ -336,8 +336,8 @@ describe "RailsAdmin Basic List" do
           list { field :name }
         end
       end
-      visit rails_admin_list_path(:model_name => "player", :query => player.name[2, -1])
-      should have_content(player.name)
+      get rails_admin_list_path(:model_name => "player", :query => player.name[2, -1])
+      response.should contain(player.name)
     end
 
     it "does not find the player if the query does not match the default search opeartor" do
@@ -347,8 +347,8 @@ describe "RailsAdmin Basic List" do
           list { field :name }
         end
       end
-      visit rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
-      should have_no_content(player.name)
+      get rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
+      response.should_not contain(player.name)
     end
 
     it "finds the player if the query matches the specified search operator" do
@@ -359,8 +359,8 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
-      should have_content(player.name)
+      get rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
+      response.should contain(player.name)
     end
 
     it "does not find the player if the query does not match the specified search operator" do
@@ -371,8 +371,8 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit rails_admin_list_path(:model_name => "player", :query => player.name[1..-1])
-      should have_no_content(player.name)
+      get rails_admin_list_path(:model_name => "player", :query => player.name[1..-1])
+      response.should_not contain(player.name)
     end
   end
 

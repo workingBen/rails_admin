@@ -318,7 +318,7 @@ describe "RailsAdmin Config DSL Edit Section" do
       RailsAdmin.config Team do
         edit do
           field :manager do
-            help "#{help} Additional help text for manager field."
+            help help + "Additional help text for manager field."
           end
           field :division_id
           field :name
@@ -326,9 +326,9 @@ describe "RailsAdmin Config DSL Edit Section" do
       end
       get rails_admin_new_path(:model_name => "team")
       response.should have_tag(".field") do |elements|
-        elements[0].should have_tag("p.help", :content => "Required 100 characters or fewer. Additional help text for manager field.")
+        elements[0].should have_tag("p.help", :content => "Required. 100 characters or fewer. Additional help text for manager field.")
         elements[1].should have_tag("p.help", :content => "Required")
-        elements[2].should have_tag("p.help", :content => "Optional 50 characters or fewer.")
+        elements[2].should have_tag("p.help", :content => "Optional. 50 characters or fewer.")
       end
     end
 
@@ -348,9 +348,9 @@ describe "RailsAdmin Config DSL Edit Section" do
       end
       get rails_admin_new_path(:model_name => "team")
       response.should have_tag(".field") do |elements|
-        elements[0].should have_tag("p.help", :content => "Optional 100 characters or fewer.")
+        elements[0].should have_tag("p.help", :content => "Optional. 100 characters or fewer.")
         elements[1].should have_tag("p.help", :content => "Optional")
-        elements[2].should have_tag("p.help", :content => "Required 50 characters or fewer.")
+        elements[2].should have_tag("p.help", :content => "Required. 50 characters or fewer.")
       end
     end
   end

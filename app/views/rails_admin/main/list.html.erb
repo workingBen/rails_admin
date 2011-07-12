@@ -70,9 +70,11 @@
                <%= link_to(t("admin.list.export_action"), rails_admin_export_path(params.reject{|key, value| key.to_sym == :page}), :class => "ra-button", :method => :post) %>
               </li>
               <% end %>
-              <li>
-               <%= link_to(t("admin.history.name"), rails_admin_history_model_path, :class => "ra-button") %>
-              </li>
+              <% if authorized? :see_history, @abstract_model %>
+                <li>
+                 <%= link_to(t("admin.history.name"), rails_admin_history_model_path, :class => "ra-button") %>
+                </li>
+              <% end %>
               <% if authorized? :new, @abstract_model %>
                 <li>
                  <%= link_to(t("admin.list.add_new"), rails_admin_new_path(:model_name => @abstract_model.to_param), :class => "ra-button") %>
@@ -125,7 +127,9 @@
                   <% if authorized? :delete, @abstract_model %>
                   <th class="action"><%= t("admin.list.delete_action").upcase %></th>
                   <% end %>
+                  <% if authorized?(:delete, @abstract_model) || authorized?(:export, @abstract_model) %>
                   <th class="action"><%= t("admin.list.select_action").upcase %></th>
+                  <% end %>
                 </tr>
               </thead>
               <tfoot>

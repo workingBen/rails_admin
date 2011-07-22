@@ -26,11 +26,4 @@ $j(document).ready(function($){
       window.location.href = $(this).attr("data-link");
     };
   });
-  
-  
-  // accordeon
-  $("#nav .more a").live('click', function() {
-    $(this).siblings('ul').toggle('slide');
-  });  
-  $("#nav .more:not(.active) ul").hide();
 });

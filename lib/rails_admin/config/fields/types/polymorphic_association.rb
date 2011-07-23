@@ -14,12 +14,8 @@ module RailsAdmin
             super(parent, name, properties, association)
           end
 
-          register_instance_option(:edit_partial) do
+          register_instance_option(:partial) do
             :form_polymorphic_association
-          end
-
-          register_instance_option(:show_partial) do
-            :show_polymorphic_association
           end
 
           # Accessor whether association is visible or not. By default
@@ -67,7 +63,7 @@ module RailsAdmin
 
           # Reader for field's value
           def value
-            bindings[:object].send(name)
+            bindings[:object].send(association[:name])
           end
         end
       end

@@ -33,7 +33,7 @@ module RailsAdmin
             associated_model_config.abstract_model.properties.map{ |p| p[:name] }.include?(associated_model_config.object_label_method) ? [associated_model_config.object_label_method, {self.abstract_model.model.name => self.name}] : true
           end
 
-          register_instance_option(:edit_partial) do
+          register_instance_option(:partial) do
             :form_filtering_select
           end
 
@@ -43,11 +43,6 @@ module RailsAdmin
 
           def selected_id
             bindings[:object].send(child_key)
-          end
-
-          # Reader for field's value
-          def value
-            bindings[:object].send(name)
           end
 
           def method_name

@@ -5,6 +5,11 @@ describe "RailsAdmin Config DSL Show Section" do
   let(:team) { Factory.create :team }
 
   def do_request
+    # tests were done with compact_show_view being false
+    RailsAdmin.config do |c|
+      c.compact_show_view = false
+    end
+    
     visit rails_admin_show_path(:model_name => "team", :id => team.id)
   end
 
@@ -265,39 +270,6 @@ describe "RailsAdmin Config DSL Show Section" do
       %w[Division Founded Wins Losses Win\ percentage Revenue Players Fans].each do |text|
         should have_selector("div.label", :text => text)
       end
-    end
-  end
-
-  describe "Paperclip Support" do
-    before do
-      @user = Factory.create(:user)
-    end
-
-    it "when file is available, should show the image file" do
-      RailsAdmin.config User do
-        show do
-          field :avatar
-        end
-      end
-
-      @user.avatar_file_name = "1.jpg"
-      @user.save!
-
-      visit rails_admin_show_path(:model_name => "user", :id => @user.id)
-
-      should have_selector("div.user_avatar div.value img[src='#{@user.avatar.url}']")
-    end
-
-    it "when file is not available, should show 'No File Found'" do
-      RailsAdmin.config User do
-        show do
-          field :avatar
-        end
-      end
-
-      visit rails_admin_show_path(:model_name => "user", :id => @user.id)
-
-      should have_selector("div.value", :text => "No file found")
     end
   end
 end

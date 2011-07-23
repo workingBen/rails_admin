@@ -118,6 +118,11 @@ module RailsAdmin
             "".html_safe
           end
         end
+        
+        # output for pretty printing (show, list, etc)
+        register_instance_option(:pretty_value) do
+          formatted_value
+        end
 
         # Accessor for field's help text displayed below input field.
         register_instance_option(:help) do
@@ -145,29 +150,17 @@ module RailsAdmin
           properties && properties[:length]
         end
 
-        register_instance_option(:show_partial) do
-          :show_base
-        end
-
         register_instance_option(:partial) do
-          # TODO remove me, I've been deprecated on 2011-07-12
-        end
-
-        register_instance_option(:edit_partial) do
           :form_field
         end
 
-        register_instance_option(:create_partial) do
-          edit_partial
-        end
-
-        register_instance_option(:update_partial) do
-          edit_partial
-        end
+        register_deprecated_instance_option(:show_partial, :partial) # deprecated on 2011-07-15
+        register_deprecated_instance_option(:edit_partial, :partial) # deprecated on 2011-07-15
+        register_deprecated_instance_option(:create_partial, :partial) # deprecated on 2011-07-15
+        register_deprecated_instance_option(:update_partial, :partial) # deprecated on 2011-07-15
 
         register_instance_option(:render) do
-          action = self.parent.class.to_s.demodulize.downcase
-          bindings[:view].render :partial => send("#{action}_partial").to_s, :locals => {:field => self, :form => bindings[:form] }
+          bindings[:view].render :partial => partial.to_s, :locals => {:field => self, :form => bindings[:form] }
         end
 
         # Accessor for whether this is field is mandatory.  This is

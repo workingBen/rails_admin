@@ -22,7 +22,9 @@
         if a.save
           object.address = a
         else  
-          object.errors << a.errors
+          a.errors.each do |error|
+            object.errors.add(:base, error.message)
+          end
         end
       end
     end

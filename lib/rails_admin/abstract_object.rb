@@ -14,7 +14,7 @@
     end
 
     def attributes=(attributes)
-      #SHAWN WUZ HERE dirty hack
+      #SHAWN WUZ HERE dirty address-specific hack
       temp_address = attributes.delete(:address)
       object.send :attributes=, attributes, false
       if temp_address
@@ -22,8 +22,8 @@
         if a.save
           object.address = a
         else  
-          a.errors.each do |error|
-            object.errors.add(:base, error.message)
+          a.errors.each_pair do |attr, message|
+            object.errors.add(:base, "Address #{attr}: #{message}")
           end
         end
       end

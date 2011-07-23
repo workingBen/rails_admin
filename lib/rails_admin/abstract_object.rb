@@ -17,7 +17,14 @@
       #SHAWN WUZ HERE dirty hack
       temp_address = attributes.delete(:address)
       object.send :attributes=, attributes, false
-      object.address = Address.create(temp_address) if temp_address
+      if temp_address
+        a = Address.new(temp_address) 
+        if a.save
+          object.address = a
+        else  
+          object.errors << a.errors
+        end
+      end
     end
 
     def method_missing(name, *args, &block)

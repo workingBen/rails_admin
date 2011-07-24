@@ -14,7 +14,19 @@
     end
 
     def attributes=(attributes)
+      #SHAWN WUZ HERE dirty address-specific hack
+      temp_address = attributes.delete(:address)
       object.send :attributes=, attributes, false
+      if temp_address
+        a = Address.new(temp_address) 
+        if a.save
+          object.address = a
+        else  
+          a.errors.each_pair do |attr, message|
+            object.errors.add(:base, "Address #{attr}: #{message}")
+          end
+        end
+      end
     end
 
     def method_missing(name, *args, &block)

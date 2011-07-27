@@ -32,5 +32,5 @@ Gem::Specification.new do |gem|
   # FIXME: this should reference RailsAdmin::VERSION but because of
   # http://jira.codehaus.org/browse/JRUBY-5319 we can't use "require"
   # in our gemspec
-  gem.version = '0.0.1'
+  gem.version = '0.0.2'
 end

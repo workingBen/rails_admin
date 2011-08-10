@@ -2,6 +2,8 @@ RailsAdmin
 ==========
 RailsAdmin is a Rails engine that provides an easy-to-use interface for managing your data.
 
+[![Build Status](https://secure.travis-ci.org/sferik/rails_admin.png)](http://travis-ci.org/sferik/rails_admin)
+
 See the demo here: http://demo.railsadmin.org/
 
 RailsAdmin started as a port of [MerbAdmin](https://github.com/sferik/merb-admin) to Rails 3
@@ -33,26 +35,38 @@ Help
 ----
 If you have a question, you can ask the [official RailsAdmin mailing list](http://groups.google.com/group/rails_admin)
 or ping sferik on IRC in [#railsadmin on irc.freenode.net](http://webchat.freenode.net/?channels=railsadmin).
-Please don't use the issue tracker, which is for issues only.
+Please don't use the issue tracker, which is for *issues* only.
 
 Check if the build is green here: http://ci.railsadmin.org/job/RailsAdmin/
 
-If you have good reasons to think you found a *rails_admin* bug, submit a ticket providing link to gists with:
-
-1. used rails_admin commit (in your Gemfile.lock)
-2. obtained stacktrace
-3. your initializers/rails_admin.rb
-4. models declarations that matter
-5. and anything else you find relevant
+If you have good reasons to think you found a *rails_admin* bug, submit a ticket (read the very end of this readme first)
 
 API Update Note
 ---------------
-The model configuration `dropdown` has been deprecated in favor of navigation_label. 
+
+Important notice about `BelongsToAssociation`: 
+In the DSL, they now must be referenced by the association name, not the child_key.
+Considering:
+    
+    # `user_id: integer` (DB)
+    belongs_to :user # (ActiveRecord)
+
+Instead of:
+    
+    field :user_id
+
+You must use:
+
+    field :user
+
+`field :user_id` now references the column (automatically hidden), which type is `Integer`, not the `BelongToAssociation`.
+
+The model configuration `dropdown` has been deprecated in favor of `navigation_label`.
 API unchanged.
 
-The field configuration method `show_partial` has been removed in favor of 
-field configuration `pretty_value`, which is used more globally and consistently 
-across the whole application. Show partials are no longer in use, method doesn't 
+The field configuration method `show_partial` has been removed in favor of
+field configuration `pretty_value`, which is used more globally and consistently
+across the whole application. Show partials are no longer in use, method doesn't
 exist anymore.
 
 `RailsAdmin::Config::Sections::List.default_items_per_page` has been moved to
@@ -201,7 +215,7 @@ You can exclude models from RailsAdmin by appending those models to `excluded_mo
     RailsAdmin.config do |config|
       config.excluded_models << "ClassName"
     end
-    
+
 You can display empty fields in show view with:
 
     RailsAdmin.config do |config|
@@ -558,6 +572,17 @@ You can independently deactivate querying (search) or filtering for each field w
       filterable? false
     end
 
+Empty filters can be displayed in the list view:
+
+    class Team < ActiveRecord::Base
+      rails_admin do
+        list do
+          filters [:name, :division]
+        end
+      end
+    end
+
+
 **Fields - Visibility and ordering**
 
 By default all fields are visible, but they are not presented in any particular
@@ -629,7 +654,7 @@ The field's output can be modified:
             formatted_value do # used in form views
               value.to_s.upcase
             end
-            
+
             pretty_value do # used in list view columns and show views, defaults to formatted_value for non-association fields
               value.titleize
             end
@@ -868,6 +893,12 @@ equal configuration:
         end
       end
     end
+    
+**Important note on label - I18n**
+
+Use association name as translation key for label for association fields.
+If you have :user_id field with a user association, use :user as the attribute 
+
 
 In fact the first examples `group :default` configuration is unnecessary
 as the default group has already initialized all fields and belongs to
@@ -905,7 +936,6 @@ partial per default, but that can be overridden:
 
 There is a partial method for each action:
 
-* show
 * edit
 * create
 * update
@@ -934,6 +964,53 @@ have access to the current template's scope with bindings[:view]. There's also
 bindings[:object] available, which is the database record being edited.
 Bindings concept was introduced earlier in this document and the
 functionality is the same.
+
+Other example of completely override rendering logic is:
+
+    RailsAdmin.config do |config|
+      edit do
+        field :published do
+          label "Published question?"
+          render do
+            bindings[:view].render :partial => "yes_no", :locals => {:field => self, :form => bindings[:form], :fieldset => bindings[:fieldset]}
+          end
+        end
+      end
+    end
+
+In `app/views/rails_admin/main/_yes_no.html.erb`
+
+    <div class="field <%= field.dom_id %>">
+      <%= form.label field.method_name, field.label %>
+      <%= form.send :radio_button, field.name, "Y" %>
+
+      <%= %Q(Yes #{image_tag "yes.png", :alt => "Yes"} &nbsp &nbsp &nbsp).html_safe %>
+
+      <%= form.send :radio_button, field.name, "N" %>
+
+      <%= %Q(No #{image_tag "no.png", :alt => "No"}).html_safe %>
+
+      <% if field.has_errors? %>
+        <span class="errorMessage"><%= "#{field.label } #{field.errors.first}" %></span>
+      <% end %>
+      <p class="help"><%= field.help %></p>
+    </div>
+
+In this *dirty* example above, all objects can be manipulated by the developer.
+
+You can flag a field as read only, and if necessary fine-tune the output with pretty_value: 
+
+    RailsAdmin.config do |config|
+      edit do
+        field :published do
+          read_only true
+          pretty_value do
+            bindings[:object].published? ? 'Yes, it's live!' : 'No, in the loop...'
+          end
+        end
+      end
+    end
+
 
 **Fields - overriding field type**
 
@@ -976,21 +1053,20 @@ RailsAdmin ships with the following field types:
 * date
 * datetime
 * decimal
-* file_upload _does not initialize automatically_
-* paperclip_file _initializes automatically if Paperclip is present_
+* file_upload *(does not initialize automatically)*
+* paperclip_file *(initializes automatically if Paperclip is present)*
 * float
 * has_and_belongs_to_many_association
 * has_many_association
 * has_one_association
 * integer
-* password _initializes if string type column's name is password_
+* password *(initializes if string type column's name is password)*
 * string
 * enum
 * text
 * time
 * timestamp
-* virtual _useful for displaying data that is calculated a runtime
-(for example a method call on model instance)_
+* virtual *(useful for displaying data that is calculated a runtime [for example a method call on model instance])*
 
 **Fields - Creating a custom field type**
 
@@ -1108,7 +1184,8 @@ CKEditor can be enabled on fields of type text:
 
 **Fields - Ordered has_many/has_and_belongs_to_many/has_many :through associations**
 
-Orderable can be enabled on filtering multiselect fields (has_many, has_many :through & has_and_belongs_to_many associations), allowing selected options to be moved up/down.
+Orderable can be enabled on filtering multiselect fields (has_many, has_many :through & has_and_belongs_to_many associations), 
+allowing selected options to be moved up/down.
 RailsAdmin will handle ordering in and out of the form.
 
     class Player < ActiveRecord::Base
@@ -1123,6 +1200,14 @@ RailsAdmin will handle ordering in and out of the form.
 
 You'll need to handle ordering in your model with a position column for example.
 
+** Associations - trivia **
+
+You can edit related objects in filtering-multiselect by double-clicking on any visible item in the widget.
+
+If you set the :inverse_of option on your relations, RailsAdmin will automatically populate the inverse relationship
+in the modal creation window. (link next to belongs\_to and has\_many widgets)
+
+:readonly options are automatically inferred on associations fields and won't be editable in forms.
 
 ### Configuring fields ###
 
@@ -1175,7 +1260,7 @@ Example:
 
 ** Fields - include some fields **
 
-It is also possible to add fields by group and configure them by batches:
+It is also possible to add fields by group and configure them by group:
 
 Example:
 
@@ -1193,6 +1278,19 @@ Example:
             label do
               "#{label} (timestamp)"
             end
+          end
+        end
+      end
+    end
+
+Note that some fields are hidden by default (associations) and that you can display them to the list view by
+manually setting them to visible:
+
+    class League < ActiveRecord::Base
+      rails_admin do
+        list do
+          field :teams do
+            visible true
           end
         end
       end
@@ -1316,7 +1414,7 @@ unless overrides exist.
 
 For asset files, the following applies: When running in development mode, the rails_admin engine will inject a middleware
 to serve static assets (javascript files, images, stylesheets) from the gem's location. This generally isn't a good
-setup for high-traffic production environments. Depending on your web server configuration is may also just plain fail.
+setup for high-traffic production environments. Depending on your web server configuration, it may also just plain fail.
 You may need to serve the asset files from the local application tree (public/...). You can choose to have the assets
 served from the gem in development mode but from the local application tree in production mode. In that case, you
 need to copy the assets during deployment (e.g. via a capistrano hook).

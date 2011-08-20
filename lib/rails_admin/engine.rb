@@ -16,7 +16,7 @@ module RailsAdmin
     initializer "rails admin development mode" do |app|
       unless app.config.cache_classes
         ActionDispatch::Callbacks.after do
-          RailsAdmin.reset
+          #RailsAdmin.reset
         end
       end
     end
